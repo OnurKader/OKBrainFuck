@@ -4,6 +4,33 @@
 #include <fmt/format.hpp>
 #include <fstream>
 
+std::pair<bool, bool> init_commandline_options(int& argc, char**& argv);
+
+int handle_strip_case(int argc, char** argv, bool is_in_place);
+
+int main(int argc, char** argv)
+{
+	const auto& [strip, in_place] = init_commandline_options(argc, argv);
+
+	if(strip)
+	{
+		return handle_strip_case(argc, argv, in_place);
+	}
+
+	// Execute file
+	if(!strip && !in_place && argc > 1)
+	{
+		std::ifstream bf_file(argv[1ULL]);
+		const std::string code {std::istreambuf_iterator<char>(bf_file),
+								std::istreambuf_iterator<char>()};
+		OK::BrainFuck bf(code);
+
+		return 0;
+	}
+
+	return 1;
+}
+
 std::pair<bool, bool> init_commandline_options(int& argc, char**& argv)
 {
 	try
@@ -30,62 +57,46 @@ std::pair<bool, bool> init_commandline_options(int& argc, char**& argv)
 	{
 		fmt::print(stderr, "\033[31;1mUnhandled Exception Thrown!\033[m\n");
 	}
+	return {false, false};
 }
 
-int main(int argc, char** argv)
+int handle_strip_case(int argc, char** argv, bool is_in_place)
 {
-	OK::BrainFuck bf;
-	const auto& [strip, in_place] = init_commandline_options(argc, argv);
-
-	if(strip)
+	if(argc == 1)
 	{
-		if(argc == 1)
-		{
-			fmt::print(stderr,
-					   "\033[31;1mERROR! No file provided but the flag -s, --strip has been "
-					   "passed\033[m\n");
-			return 1;
-		}
+		fmt::print(stderr,
+				   "\033[31;1mERROR! No file provided but the flag -s, --strip has been "
+				   "passed\033[m\n");
+		return 1;
+	}
 
-		std::ifstream bf_file(argv[1ULL]);
+	std::ifstream bf_file(argv[1ULL]);
 
-		if(!bf_file)
+	if(!bf_file)
+	{
+		// Wow I should make this error printing into a function
+		fmt::print(stderr, "\033[31;1mCouldn't open file {}\033[m\n", argv[1ULL]);
+		return 1;
+	}
+
+	std::string temp((std::istreambuf_iterator<char>(bf_file)), (std::istreambuf_iterator<char>()));
+	bf_file.close();
+
+	// Strip comments
+	OK::BrainFuck::strip_non_bf_characters(temp);
+
+	if(is_in_place)
+	{
+		std::ofstream bf_output(argv[1ULL]);
+		if(!bf_output)
 		{
 			// Wow I should make this error printing into a function
-			fmt::print(stderr, "\033[31;1mCouldn't open file {}\033[m\n", argv[1ULL]);
+			fmt::print(stderr, "\033[31;1mCouldn't open file {} for write\033[m\n", argv[1ULL]);
 			return 1;
 		}
 
-		std::string temp((std::istreambuf_iterator<char>(bf_file)),
-						 (std::istreambuf_iterator<char>()));
-		bf_file.close();
-
-		// Strip comments
-		OK::BrainFuck::strip_non_bf_characters(temp);
-
-		if(in_place)
-		{
-			std::ofstream bf_output(argv[1ULL]);
-			if(!bf_output)
-			{
-				// Wow I should make this error printing into a function
-				fmt::print(stderr, "\033[31;1mCouldn't open file {} for write\033[m\n", argv[1ULL]);
-				return 1;
-			}
-
-			bf_output << temp;
-		}
-
-		return 0;
+		bf_output << temp;
 	}
 
-	// REPL (?) Mode
-	if(!strip && !in_place)
-	{
-		fmt::print("OwO REPL?\n");
-
-		return 0;
-	}
-
-	return 1;
+	return 0;
 }
