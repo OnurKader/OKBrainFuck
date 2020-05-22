@@ -1,5 +1,7 @@
 include_rules
 
+CXX_LIBS += -lfmt
+
 EXE := Main
 
 : foreach *.cpp | *.hpp |> !cxx |> {objs}
