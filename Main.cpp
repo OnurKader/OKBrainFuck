@@ -36,6 +36,7 @@ int main(int argc, char** argv)
 {
 	OK::BrainFuck bf;
 	const auto& [strip, in_place] = init_commandline_options(argc, argv);
+
 	if(strip)
 	{
 		if(argc == 1)
@@ -46,10 +47,45 @@ int main(int argc, char** argv)
 			return 1;
 		}
 
-		std::string temp("[]+-,.<<<<<>,><.<.+.");
+		std::ifstream bf_file(argv[1ULL]);
+
+		if(!bf_file)
+		{
+			// Wow I should make this error printing into a function
+			fmt::print(stderr, "\033[31;1mCouldn't open file {}\033[m\n", argv[1ULL]);
+			return 1;
+		}
+
+		std::string temp((std::istreambuf_iterator<char>(bf_file)),
+						 (std::istreambuf_iterator<char>()));
+		bf_file.close();
+
+		// Strip comments
 		OK::BrainFuck::strip_non_bf_characters(temp);
-		fmt::print("Stripped: {}\n", temp);
+
+		if(in_place)
+		{
+			std::ofstream bf_output(argv[1ULL]);
+			if(!bf_output)
+			{
+				// Wow I should make this error printing into a function
+				fmt::print(stderr, "\033[31;1mCouldn't open file {} for write\033[m\n", argv[1ULL]);
+				return 1;
+			}
+
+			bf_output << temp;
+		}
+
+		return 0;
 	}
 
-	return 0;
+	// REPL (?) Mode
+	if(!strip && !in_place)
+	{
+		fmt::print("OwO REPL?\n");
+
+		return 0;
+	}
+
+	return 1;
 }
