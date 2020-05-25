@@ -30,6 +30,8 @@ private:
 	std::uint16_t m_data_pointer;
 	std::string_view m_str;
 
-	void handle_operator(const size_t);
+	size_t handle_operator(const size_t);
+	inline size_t find_previous_open_bracket(size_t);
+	inline size_t find_next_close_bracket(size_t);
 };
 }	 // namespace OK

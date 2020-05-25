@@ -24,8 +24,7 @@ int main(int argc, char** argv)
 		const std::string code {std::istreambuf_iterator<char>(bf_file),
 								std::istreambuf_iterator<char>()};
 		OK::BrainFuck bf(code);
-
-		return 0;
+		return !bf.parse();
 	}
 
 	return 1;
@@ -79,11 +78,20 @@ int handle_strip_case(int argc, char** argv, bool is_in_place)
 		return 1;
 	}
 
-	std::string temp((std::istreambuf_iterator<char>(bf_file)), (std::istreambuf_iterator<char>()));
+	//	std::string temp((std::istreambuf_iterator<char>(bf_file)),
+	//(std::istreambuf_iterator<char>()));
+	std::string temp, code;
+	code.reserve(256ULL);
+
+	while(std::getline(bf_file, temp))
+		code += temp;
+
+	fmt::print("file: {}\n", code);
 	bf_file.close();
 
 	// Strip comments
-	OK::BrainFuck::strip_non_bf_characters(temp);
+	OK::BrainFuck::strip_non_bf_characters(code);
+	fmt::print("After strip: {}\n", code);
 
 	if(is_in_place)
 	{
@@ -95,7 +103,7 @@ int handle_strip_case(int argc, char** argv, bool is_in_place)
 			return 1;
 		}
 
-		bf_output << temp;
+		bf_output << code;
 	}
 
 	return 0;
