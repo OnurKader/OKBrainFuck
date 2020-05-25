@@ -1,7 +1,5 @@
 #include "BrainFuck.hpp"
 
-#include <fmt/format.hpp>
-
 namespace OK
 {
 BrainFuck::BrainFuck() : m_tape {0U}, m_data_pointer {0U}, m_str {} {}
@@ -62,9 +60,11 @@ size_t BrainFuck::find_previous_open_bracket(size_t index)
 	size_t bracket_count = 0ULL;
 	for(size_t i = index - 1ULL; ~i; --i)
 	{
-		if(m_tape[i] == ']')
+		if(m_str[i] == ']')
+		{
 			++bracket_count;
-		else if(m_tape[i] == '[')
+		}
+		else if(m_str[i] == '[')
 		{
 			if(bracket_count == 0ULL)
 				return i;
@@ -81,11 +81,11 @@ size_t BrainFuck::find_next_close_bracket(size_t index)
 		return index;
 
 	size_t bracket_count = 0ULL;
-	for(size_t i = index + 1ULL; i < m_tape.size(); ++i)
+	for(size_t i = index + 1ULL; i < m_str.size(); ++i)
 	{
-		if(m_tape[i] == '[')
+		if(m_str[i] == '[')
 			++bracket_count;
-		else if(m_tape[i] == ']')
+		else if(m_str[i] == ']')
 		{
 			if(bracket_count == 0ULL)
 				return i;
@@ -104,7 +104,6 @@ bool BrainFuck::parse()
 	size_t current_index = 0ULL;
 	while(current_index < m_str.size())
 	{
-		std::putc(m_str[current_index], stdout);
 		current_index = handle_operator(current_index) + 1ULL;
 	}
 
