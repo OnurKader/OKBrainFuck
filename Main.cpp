@@ -10,6 +10,22 @@ int handle_strip_case(int argc, char** argv, bool is_in_place);
 
 int main(int argc, char** argv)
 {
+	if(argc == 1)
+	{
+		std::string temp;
+		fmt::print("> ");
+		while(std::getline(std::cin, temp))
+		{
+			// TODO: Get the strings and push to a vector and capture \033[A or whatever is up/down
+			// and do the thing
+			OK::BrainFuck bf(temp);
+			bf.parse();
+			fmt::print("> ");
+		}
+
+		return 0;
+	}
+
 	const auto& [strip, in_place] = init_commandline_options(argc, argv);
 
 	if(strip)
@@ -21,8 +37,8 @@ int main(int argc, char** argv)
 	if(!strip && !in_place && argc > 1)
 	{
 		std::ifstream bf_file(argv[1ULL]);
-		const std::string code {std::istreambuf_iterator<char>(bf_file),
-								std::istreambuf_iterator<char>()};
+		const std::string code{std::istreambuf_iterator<char>(bf_file),
+							   std::istreambuf_iterator<char>()};
 		OK::BrainFuck bf(code);
 		return !bf.parse();
 	}
